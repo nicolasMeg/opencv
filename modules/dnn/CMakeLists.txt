@@ -10,7 +10,7 @@ set(the_description "Deep neural network module. It allows to load models from d
 
 ocv_add_dispatched_file_force_all("layers/layers_common" AVX AVX2 AVX512_SKX)
 
-ocv_add_module(dnn opencv_core opencv_imgproc WRAP python java js)
+ocv_add_module(dnn opencv_core opencv_imgproc WRAP python java objc js)
 
 ocv_option(OPENCV_DNN_OPENCL "Build with OpenCL support" HAVE_OPENCL AND NOT APPLE)
 if(HAVE_TENGINE)
@@ -21,7 +21,15 @@ if(OPENCV_DNN_OPENCL AND HAVE_OPENCL)
   add_definitions(-DCV_OCL4DNN=1)
 endif()
 
-ocv_option(OPENCV_DNN_CUDA "Build with CUDA support" HAVE_CUDA AND HAVE_CUBLAS AND HAVE_CUDNN)
+if(NOT DEFINED OPENCV_DNN_CUDA AND HAVE_CUDNN AND CUDNN_VERSION VERSION_LESS 8.0)
+  message(STATUS "DNN: CUDNN 8.0 is not supported yes. Details: https://github.com/opencv/opencv/issues/17496")
+endif()
+ocv_option(OPENCV_DNN_CUDA "Build with CUDA support"
+    HAVE_CUDA
+    AND HAVE_CUBLAS
+    AND HAVE_CUDNN
+    AND CUDNN_VERSION VERSION_LESS 8.0
+)
 
 if(OPENCV_DNN_CUDA AND HAVE_CUDA AND HAVE_CUBLAS AND HAVE_CUDNN)
   add_definitions(-DCV_CUDA4DNN=1)
@@ -186,3 +194,4 @@ if(BUILD_PERF_TESTS)
     endif()
   endif()
 endif()
+
